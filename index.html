@@ -3058,69 +3058,45 @@ function closeLetterDiary(hide=true){
    SEND ANONYMOUS LETTER
 ===================================================== */
 
-function sendAnonymousLetter(){
+async function sendAnonymousLetter(){
 
-    const input =
-        document.getElementById("letterInput");
-
-    const status =
-        document.getElementById("letterStatus");
-
-    const letter =
-        input.value.trim();
-
+    const input = document.getElementById("letterInput");
+    const status = document.getElementById("letterStatus");
+    const letter = input.value.trim();
 
     if(!letter){
-
-        status.innerHTML =
-            "Write something first.";
-
+        status.innerHTML = "Write something first.";
         return;
     }
 
+    status.innerHTML = "Sending your letter quietly...";
 
-    /*
-       DEMO STORAGE
+    const formData = new FormData();
+    formData.append("access_key", "45af7638-71de-4441-9200-7cc873330076");
+    formData.append("subject", "A new anonymous letter for Ridom");
+    formData.append("from_name", "My Healing Room");
+    formData.append("message", letter);
+    formData.append("botcheck", "");
 
-       The letter is saved only in this browser.
-       Later we can connect this function to
-       a real database / form service.
-    */
+    try{
+        const response = await fetch("https://api.web3forms.com/submit", {
+            method:"POST",
+            body:formData
+        });
+        const result = await response.json();
 
-    const existing =
-        JSON.parse(
-            localStorage.getItem("ridomLetters") || "[]"
-        );
-
-
-    existing.push({
-
-        message:letter,
-
-        time:new Date().toISOString()
-
-    });
-
-
-    localStorage.setItem(
-        "ridomLetters",
-        JSON.stringify(existing)
-    );
-
-
-    input.value = "";
-
-
-    status.innerHTML =
-        "Your letter disappeared quietly into the room.";
-
-
-    setTimeout(function(){
-
-        status.innerHTML =
-            "Thank you for leaving it here.";
-
-    },1800);
+        if(result.success){
+            input.value = "";
+            status.innerHTML = "Your letter has reached the room.";
+            setTimeout(function(){
+                status.innerHTML = "Thank you for leaving it here.";
+            },2200);
+        }else{
+            status.innerHTML = "The letter could not leave the room. Please try again.";
+        }
+    }catch(error){
+        status.innerHTML = "Something went wrong. Please try again.";
+    }
 }
 
 
